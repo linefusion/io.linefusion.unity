@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RuleSet Name="Rules" Description="Code analysis rules" ToolsVersion="17.0">
+   <Rules AnalyzerId="Microsoft.Analyzers.ManagedCodeAnalysis" RuleNamespace="Microsoft.Rules.Managed">
+     <Rule Id="IDE1006" Action="Error" />
+   </Rules>
+</RuleSet>

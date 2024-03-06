@@ -1,0 +1,8 @@
+{
+  "ext": "cs csproj proj props target sln json",
+  "ignore": ["dist/**/*", "**/obj/**/*", "**/bin/**/*", "unity/**/*"],
+  "exec": "dotnet clean >nul 2>&1 && dotnet build Linefusion.proj",
+  "watch": ["."],
+  "verbose": true,
+  "delay": 1000
+}

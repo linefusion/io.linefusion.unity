@@ -1,0 +1,83 @@
+<Project>
+
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>$(WorkspaceDir)/props/Unity.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Unity3D" Version="2.1.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Unity.Analyzers" Version="1.10.0" PrivateAssets="All" />
+  </ItemGroup>
+
+  <Target Name="CopyUnityOutput" AfterTargets="Build" Condition="'$(UnityPackage)' != ''">
+    <PropertyGroup>
+      <BuildOutputSourceDir>$([System.IO.Path]::GetFullPath('$(TargetDir)'))</BuildOutputSourceDir>
+      <BuildOutputDestinationDir>$(UnityProjectPath)/Packages/$(UnityPackage)/Assemblies</BuildOutputDestinationDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <UnityOutputAssemblies Include="@(UnityOutputAssembly->'$(BuildOutputSourceDir)\%(RecursiveDir)%(Filename)%(Extension)')" />
+      <BuildOutputSourceFiles Include="@(UnityOutputAssemblies->Exists())" />
+      <BuildOutputDestinationFiles Include="@(BuildOutputSourceFiles->'$(BuildOutputDestinationDir)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(BuildOutputSourceFiles)"
+      DestinationFiles="@(BuildOutputDestinationFiles)"
+      SkipUnchangedFiles="true"
+      OverwriteReadOnlyFiles="true"
+      Retries="0"
+      RetryDelayMilliseconds="1000"
+      ContinueOnError="true"
+    />
+  </Target>
+
+  <!--
+  <Target Name="CopyToDist" AfterTargets="Build" Condition="('$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'netstandard2.1')">
+
+  </Target>
+
+  <Target Name="NormalizeAssetGuids" AfterTargets="CopyToDist" Condition="('$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'netstandard2.1')">
+    <ItemGroup>
+      <DistOutputFiles Include="$(DistFolder)/**/*" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CopyToUnity" AfterTargets="NormalizeAssetGuids" Condition="('$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'netstandard2.1')">
+    <ItemGroup>
+      <DistOutputFiles Include="$(DistFolder)/**/*" />
+      <UnityDestinationFiles Include="@(DistOutputFiles->'$(UnityAssembliesPath)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(DistOutputFiles)"
+      DestinationFiles="@(UnityDestinationFiles)"
+      SkipUnchangedFiles="true"
+      OverwriteReadOnlyFiles="true"
+      Retries="0"
+      RetryDelayMilliseconds="1000"
+      ContinueOnError="true"
+    />
+    <NormalizeAssetGuids
+      ProjectDir="$(UnityFolder)"
+      TargetDir="$(UnityAssembliesPath)"
+      />
+  </Target>
+
+  <Target Name="CopyToProject" AfterTargets="CopyToUnity" Condition=" '$(TargetUnityProjectPath)' != '' ">
+    <ItemGroup>
+      <PackageFiles Include="$(UnityPackagePath)/**/*" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(PackageFiles)"
+      DestinationFiles="@(PackageFiles->'$(TargetUnityProjectPath)\%(RecursiveDir)%(Filename)%(Extension)')"
+      SkipUnchangedFiles="true"
+      OverwriteReadOnlyFiles="true"
+      Retries="0"
+      RetryDelayMilliseconds="500"
+      ContinueOnError="true"
+    />
+  </Target>
+  -->
+
+</Project>

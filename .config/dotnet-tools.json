@@ -1,5 +1,24 @@
 {
   "version": 1,
   "isRoot": true,
-  "tools": {}
+  "tools": {
+    "run-script": {
+      "version": "0.5.0",
+      "commands": [
+        "r"
+      ]
+    },
+    "csharpier": {
+      "version": "0.27.3",
+      "commands": [
+        "dotnet-csharpier"
+      ]
+    },
+    "microsoft.visualstudio.slngen.tool": {
+      "version": "11.2.3",
+      "commands": [
+        "slngen"
+      ]
+    }
+  }
 }

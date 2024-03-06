@@ -1,0 +1,34 @@
+<Project>
+
+  <Import Project="./props/Workspace.props" />
+  <Import Project="./props/Unity.Tasks.props" />
+
+  <Import Project="$(WorkspaceDir)/Env.props" Condition="exists('$(WorkspaceDir)/Env.props')" />
+  
+  <PropertyGroup>
+    <UnityVersion Condition="'$(UnityVersion)' == ''">2022.3.18f1</UnityVersion>
+    <UnityProjectPath Condition="'$(UnityProjectPath)' == ''">$(WorkspaceDir)/unity</UnityProjectPath>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <UnityProjectPathArgument>"$([System.String]::Copy('$(WorkspaceDir)/unity').Replace('\', '/'))"</UnityProjectPathArgument>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <UnityInstallPath>$([MSBuild]::GetRegistryValueFromView('HKEY_CURRENT_USER\Software\Unity Technologies\Installer\Unity $(UnityVersion)', 'Location x64', null, RegistryView.Registry32, RegistryView.Default))</UnityInstallPath>
+    <UnityExecutable>$([System.IO.Path]::GetFullPath('$(UnityInstallPath)/Editor/Unity.exe'))</UnityExecutable>
+    <UnityInstallRootPath>$([System.IO.Path]::GetDirectoryName('$(UnityInstallPath)'))</UnityInstallRootPath>
+    <UnityProjectPackagesPath>$([System.IO.Path]::GetFullPath('$(UnityProjectPath)/Packages'))</UnityProjectPackagesPath>
+    <UnityProjectPackagePath Condition="'$(UnityAsset)' != ''">$([System.IO.Path]::GetFullPath('$(UnityProjectPath)/Packages/$(UnityAsset)'))</UnityProjectPackagePath>
+    <UnityProjectPackageAssembliesPath>$([System.IO.Path]::GetFullPath('$(UnityProjectPath)/Packages/$(UnityAsset)/Assemblies'))</UnityProjectPackageAssembliesPath>
+  </PropertyGroup>
+
+  <!--
+  <ItemGroup>
+    <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.26" />
+  </ItemGroup>
+  -->
+
+  <Import Project="$(WorkspaceProps)/Common.props" />
+
+</Project>

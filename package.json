@@ -1,0 +1,11 @@
+{
+    "name": "io.linefusion.unity",
+    "private": true,
+    "version": "0.0.0",
+    "scripts": {
+        "commit": ""
+    },
+    "dependencies": {
+        "@changesets/cli": "^2.27.1"
+    }
+}

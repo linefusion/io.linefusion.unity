@@ -1,0 +1,58 @@
+{{
+
+  func is_event
+    ret $0.attributes | array.filter @(do; ret $0.full_name == "MyProject.Events.EventAttribute"; end) | array.size > 0
+  end
+
+  func has_attribute
+    attribute_name = $1
+    attributes = $0.attributes
+    func condition
+      ret $0.full_name == attribute_name
+    end
+    ret (attributes | array.filter @condition | array.size) > 0
+  end
+
+  func get_attribute
+    attribute_name = $1
+    attributes = $0.attributes
+    func condition
+      ret $0.full_name == attribute_name
+    end
+    $attr = (attributes | array.filter @condition | array.first)
+    $attr2 = null
+    for $arg in $attr?.arguments
+      if $attr2 == null
+        $attr2 = {}
+      end
+      $attr2[$arg.name] = $arg.value
+    end
+    ret $attr2
+  end
+
+  func that_has_attribute
+    attribute_name = $1
+    func condition
+      ret has_attribute($0, attribute_name)
+    end
+    ret $0 | array.filter @condition
+  end
+
+  func find_assembly
+    assembly_name = $0
+    func condition
+      $check1 = $0.assembly.location | string.ends_with("/" + assembly_name + ".dll")
+      $check2 = $0.assembly.location | string.ends_with("\\" + assembly_name + ".dll")
+      ret $check1 || $check2
+    end
+    ret unity.code | array.filter @condition | array.first
+  end
+
+  gameAssembly = find_assembly "Game"
+
+  events = gameAssembly.structs | that_has_attribute "MyProject.Events.EventAttribute"
+  for event in events
+    ev = event | get_attribute("MyProject.Events.EventAttribute")
+  end
+
+}}

@@ -1,0 +1,131 @@
+<Project>
+  
+  <UsingTask TaskName="NormalizeAssetGuids" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <ProjectDir ParameterType="System.String" Required="true" />
+      <TargetDir ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Using Namespace="System.Security.Cryptography" />
+      <Using Namespace="Microsoft.Build.Framework" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          var MetaBase = Directory
+            .EnumerateFiles(ProjectDir, "*.meta", SearchOption.AllDirectories)
+            .ToDictionary(path => path, path => File.ReadAllText(path))
+            ;
+
+          string GetRelativePath(string basePath, string targetPath)
+          {
+            basePath = basePath.Replace(System.IO.Path.DirectorySeparatorChar, '/');
+            basePath = basePath.EndsWith("/") ? basePath : basePath + "/";
+            basePath = basePath.Replace('/', System.IO.Path.DirectorySeparatorChar);
+
+            Uri baseUri = new Uri(basePath, UriKind.Absolute);
+            Uri targetUri = new Uri(targetPath, UriKind.Absolute);
+            Uri relativeUri = baseUri.MakeRelativeUri(targetUri);
+            return Uri.UnescapeDataString(relativeUri.ToString()).Replace(System.IO.Path.DirectorySeparatorChar, '/');
+          }
+
+          string ReadGuidFromMetaFile(string path)
+          {
+            var guidMatch = new Regex(@"^guid: (?<guid>.*)$", RegexOptions.Multiline);
+            var contents = File.ReadAllText(path);
+
+            var result = guidMatch.Match(contents);
+            if (!result.Success) 
+            {
+              throw new Exception("Meta file '" + path + "' does not contain a guid");
+            }
+
+            return result.Groups["guid"].Value;
+          }
+  
+          void RegenerateGuid(string guid, string value)
+          {
+            Log.LogMessage(MessageImportance.High, "Regenerating GUID for " + guid);
+            foreach (var kv in MetaBase) 
+            {
+              var contents = kv.Value;
+              var replacedContents = contents.Replace(guid, value);
+              if (contents != replacedContents) 
+              {
+                Log.LogMessage(MessageImportance.High, " > Found reference in  " + kv.Key);
+                File.WriteAllText(kv.Key, replacedContents);
+                MetaBase[kv.Key] = replacedContents;
+              }
+            }
+          }
+
+          var paths = Directory
+            .EnumerateFiles(TargetDir, "*", SearchOption.AllDirectories)
+            .Where(path => !path.ToLower().EndsWith(".meta"))
+            .Concat(Directory.EnumerateDirectories(TargetDir, "*", SearchOption.AllDirectories))
+            .OrderBy(item => item, StringComparer.InvariantCultureIgnoreCase)
+            .ToArray();
+
+          var exclusions = paths.Where(path => path.EndsWith("~")).ToArray();
+          paths = paths.Where(path => !exclusions.Any(exclusion => path.StartsWith(exclusion))).ToArray();
+
+          foreach (var path in paths)
+          {
+            var relativePath = GetRelativePath(TargetDir, path);
+
+            var guid = "";
+            using (var hash = SHA256.Create()) 
+            {
+              var temp = BitConverter.ToString(hash.ComputeHash(Encoding.UTF8.GetBytes(relativePath))).Replace("-", "").ToLower();
+
+              var tk1 = Convert.ToUInt64(temp.Substring(0, 16), 16);
+              var tk2 = Convert.ToUInt64(temp.Substring(16, 16), 16);
+              var tk3 = Convert.ToUInt64(temp.Substring(32, 16), 16);
+              var tk4 = Convert.ToUInt64(temp.Substring(48, 16), 16);
+
+              var tkf1 = (tk1 ^ tk2).ToString("X16");
+              var tkf2 = (tk1 ^ tk2).ToString("X16");
+
+              var tkf = $"{tkf1}{tkf2}";
+
+              var k1 = Convert.ToUInt32(tkf.Substring(0, 8), 16);
+              var k2 = Convert.ToUInt32(tkf.Substring(8, 8), 16);
+              var k3 = Convert.ToUInt32(tkf.Substring(16, 8), 16);
+              var k4 = Convert.ToUInt32(tkf.Substring(24, 8), 16);
+
+              var f1 = (k1 ^ k2).ToString("X8");
+              var f2 = (k3 ^ k4).ToString("X8");
+
+              var f = f1 + f2;
+
+              var wpf = "576F4C66756C7573";
+
+              guid = $"{wpf}{f}".ToLower();
+            }
+
+            var targetPath = Path.Combine(TargetDir, relativePath);
+            var targetMeta = targetPath + ".meta";
+
+            // Log.LogMessage(MessageImportance.High, " Guid " + guid + " for path " + relativePath);
+
+            if (!File.Exists(targetMeta))
+            {
+              File.WriteAllText(targetMeta, "fileFormatVersion: 2\nguid: " + guid + "\n");
+            }
+            else
+            {
+              var currentGuid = ReadGuidFromMetaFile(targetMeta);
+              if (currentGuid != guid)
+              {
+                RegenerateGuid(currentGuid, guid);
+                // Log.LogMessage(MessageImportance.High, " Meta mismatch: " + relativePath + "\n\tExpected: " + guid + "\n\t   Value: " + currentGuid);
+              }
+            }
+          }
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+</Project>

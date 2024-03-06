@@ -1,5 +1,9 @@
 {
     "files.associations": {
-        "*.cs.txt": "csharp"
-    }
+        "*.cs.*": "csharp"
+    },
+    "[csharp]": {
+        "editor.defaultFormatter": "csharpier.csharpier-vscode"
+    },
+    "dotnet.defaultSolution": "$(WorkspaceFolder)/Linefusion.sln"
 }

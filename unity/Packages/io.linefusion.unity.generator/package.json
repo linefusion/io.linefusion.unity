@@ -1,0 +1,34 @@
+{
+  "name": "io.linefusion.unity.generator",
+  "version": "0.0.1",
+  "displayName": "Linefusion Generator",
+  "description": "Linefusion Generator",
+  "unity": "2022.3",
+  "unityRelease": "18f1",
+  "documentationUrl": "https://github.com/linefusion/io.linefusion.unity/blob/main/README.md#Generator",
+  "changelogUrl": "https://github.com/linefusion/io.linefusion.unity/blob/main/CHANGELOG.md",
+  "licensesUrl": "https://github.com/linefusion/io.linefusion.unity/blob/main/LICENSE",
+  "keywords": [
+    "generator",
+    "asset-generator",
+    "prefab-generator",
+    "source-generator",
+    "templates",
+    "liquid",
+    "scriban"
+  ],
+  "author": {
+    "name": "Linefusion",
+    "email": "wolfulus@linefusion.io",
+    "url": "https://linefusion.io"
+  },
+  "dependencies": {
+  },
+  "samples": [
+      {
+          "displayName": "Simple Generator",
+          "description": "Contains a simple generator that outputs a file.",
+          "path": "Samples~/SimpleGenerator"
+      }
+  ]
+}

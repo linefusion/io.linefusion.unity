@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <UnityPackage>io.linefusion.unity.generator</UnityPackage>
+  </PropertyGroup>
+
+  <Import Project="$(WorkspaceProps)/Unity.props" />
+
+  <ItemGroup>
+    <UnityOutputAssembly Include="$(TargetDir)/Humanizer.dll" />
+    <UnityOutputAssembly Include="$(TargetDir)/Basic.Reference.Assemblies.NetStandard20.dll" />
+    <UnityOutputAssembly Include="$(TargetDir)/Linefusion*.dll" />
+    <UnityOutputAssembly Include="$(TargetDir)/NTypeWriter*.dll" />
+    <UnityOutputAssembly Include="$(TargetDir)/Scriban*.dll" />
+    <UnityOutputAssembly Include="$(TargetDir)/SQLite*.dll" />
+    <UnityOutputAssembly Include="$(TargetDir)/Microsoft.Bcl*.dll" />
+    <UnityOutputAssembly Include="$(TargetDir)/Microsoft.CodeAnalysis*.dll" />
+    <UnityOutputAssembly Include="$(TargetDir)/System.*.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Linefusion.Generator\Linefusion.Generator.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="System.Text.Json" Version="8.0.2"/>
+    <PackageReference Include="System.Diagnostics.Tools" Version="4.3.0" />
+    <PackageReference Include="YamlDotNet" Version="15.1.1"/>
+    <PackageReference Include="Scriban.Signed" Version="5.9.0" />
+    <PackageReference Include="NTypewriter.CodeModel" Version="0.5.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Remove="$(UnityEnginePath)" />
+    <Reference Include="$(UnityModulesPath)\UnityEngine.CoreModule.dll" Private="false" />
+
+    <Reference Remove="$(UnityEditorPath)" />
+    <Reference Include="$(UnityModulesPath)\UnityEditor.CoreModule.dll" Private="false" />
+
+    <Reference Include="$(UnityModulesPath)\UnityEngine.IMGUIModule.dll" Private="false" />
+    <Reference Include="$(UnityModulesPath)\UnityEngine.UIElementsModule.dll" Private="false" />
+    <Reference Include="$(UnityModulesPath)\UnityEngine.JSONSerializeModule.dll" Private="false" />
+  </ItemGroup>
+
+</Project>

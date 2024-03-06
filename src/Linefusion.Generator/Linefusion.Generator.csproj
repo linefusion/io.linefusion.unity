@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Description>Template based generator.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="SQLItePCLRaw.core" Version="2.0.4" />
+    <PackageReference Include="SQLItePCLRaw.bundle_e_sqlite3" Version="2.0.4" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.11.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.11.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="3.11.0" />
+    <PackageReference Include="Scriban.Signed" Version="5.9.0" />
+    <PackageReference Include="NTypewriter" Version="0.5.1" />
+    <PackageReference Include="NTypewriter.CodeModel" Version="0.5.1" />
+    <PackageReference Include="NTypewriter.CodeModel.Functions" Version="0.5.1" />
+    <PackageReference Include="NTypewriter.CodeModel.Roslyn" Version="0.5.1" />
+    <PackageReference Include="NTypewriter.Editor.Config" Version="0.5.1" />
+    <PackageReference Include="NTypewriter.Runtime" Version="0.5.1" />
+  </ItemGroup>
+</Project>

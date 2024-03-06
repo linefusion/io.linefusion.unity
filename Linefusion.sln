@@ -1,0 +1,32 @@
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Workspace", "src\Workspace.proj", "{A17395AF-AEA4-46DC-A268-E6EEBBBA787C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Linefusion.Generator.Editor", "src\Linefusion.Generator.Editor\Linefusion.Generator.Editor.csproj", "{CF350766-DE13-422B-9AFC-189F64C3C2F2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Linefusion.Generator", "src\Linefusion.Generator\Linefusion.Generator.csproj", "{FD529703-A590-417A-88D2-90214CD1AA96}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A17395AF-AEA4-46DC-A268-E6EEBBBA787C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A17395AF-AEA4-46DC-A268-E6EEBBBA787C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A17395AF-AEA4-46DC-A268-E6EEBBBA787C}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF350766-DE13-422B-9AFC-189F64C3C2F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF350766-DE13-422B-9AFC-189F64C3C2F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF350766-DE13-422B-9AFC-189F64C3C2F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF350766-DE13-422B-9AFC-189F64C3C2F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD529703-A590-417A-88D2-90214CD1AA96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD529703-A590-417A-88D2-90214CD1AA96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD529703-A590-417A-88D2-90214CD1AA96}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD529703-A590-417A-88D2-90214CD1AA96}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6E857A36-A098-4ECC-8050-F1709BF9222D}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Bootstrap"  Sdk="" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <Import Project="../Directory.Build.props" />
+
+  <PropertyGroup Condition="'$(Configuration)' == ''">
+    <Configuration>Debug</Configuration>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="./*/*.csproj" />
+    <ProjectReference Include="./*/*/*.csproj" />
+  </ItemGroup>
+
+  <Target Name="Bootstrap">
+    <Exec Command="slngen -o ../Linefusion.sln --launch false" />
+    <CallTarget Targets="Build"></CallTarget>
+    <CallTarget Targets="UnityGenerateMetadata"></CallTarget>
+    <CallTarget Targets="UnityRefreshAssets"></CallTarget>
+    <CallTarget Targets="UnityCopyToTestProject"></CallTarget>
+  </Target>
+
+  <Target Name="Clean">
+    <Message Text="Cleaning up workspace" Importance="high" />
+  </Target>
+
+  <Target Name="Build">
+    <Message Text="Building projects" Importance="high" />
+    <MSBuild
+      Projects="@(ProjectReference)"
+      Properties="Configuration=$(Configuration)"
+      Targets="Build"
+      ContinueOnError="false"
+      StopOnFirstFailure="true">
+      <Output TaskParameter="TargetOutputs" ItemName="AssembliesBuiltByChildProjects" />
+    </MSBuild>
+  </Target>
+
+  <Target Name="UnityGenerateMetadata">
+    <Message Text="Generating Unity Metadata"
+      Importance="high" />
+    <NormalizeAssetGuids
+      ProjectDir="$(UnityProjectPath)"
+      TargetDir="$(UnityProjectPackagesPath)"
+    />
+  </Target>
+
+  <Target Name="UnityRefreshAssets">
+    <Message Text="Refreshing Unity Assets" Importance="high" />
+    <Exec
+      Command="$(UnityExecutable) -accept-apiupdate -quit -batchmode -force-free -projectPath $(UnityProjectPathArgument) -executeMethod UnityEditor.AssetDatabase.Refresh"
+      ContinueOnError="true"
+    />
+  </Target>
+
+  <Target Name="UnityCopyToTestProject" Condition="'$(UnityTestProjectPath)' != ''">
+    <Message Text="Copying to Test Project" Importance="high" />
+    <ItemGroup>
+      <AssetSourceFiles Include="$(UnityProjectPath)/Packages/*/**" />
+      <AssetDestinationFiles
+        Include="@(AssetSourceFiles->'$(UnityTestProjectPath)/Packages/%(RecursiveDir)%(Filename)%(Extension)')" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(AssetSourceFiles)"
+      DestinationFiles="@(AssetDestinationFiles)"
+      SkipUnchangedFiles="true"
+      OverwriteReadOnlyFiles="true"
+      Retries="0"
+      RetryDelayMilliseconds="1000"
+      ContinueOnError="true"
+    />
+  </Target>
+
+</Project>
