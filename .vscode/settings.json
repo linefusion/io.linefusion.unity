@@ -5,5 +5,5 @@
     "[csharp]": {
         "editor.defaultFormatter": "csharpier.csharpier-vscode"
     },
-    "dotnet.defaultSolution": "$(WorkspaceFolder)/Linefusion.sln"
+    "dotnet.defaultSolution": "Linefusion.sln"
 }

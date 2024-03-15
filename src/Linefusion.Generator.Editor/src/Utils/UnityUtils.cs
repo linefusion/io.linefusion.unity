@@ -17,6 +17,14 @@ namespace Linefusion.Generators
             }
         }
 
+        public static PathValue PackagesDir
+        {
+            get
+            {
+                return Path.GetFullPath(Path.Combine(AssetsDir, "../Packages"));
+            }
+        }
+
         public static PathValue AssetsDir
         {
             get
@@ -29,7 +37,7 @@ namespace Linefusion.Generators
         {
             return Path.GetRelativePath(UnityUtils.ProjectDir, path);
         }
-        
+
         public static string GetRelativeAssetsPath(string path)
         {
             return Path.GetRelativePath(UnityUtils.AssetsDir, path);

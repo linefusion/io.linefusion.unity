@@ -208,13 +208,21 @@ namespace Linefusion.Generators.Editor.CodeModel
             {
                 FieldInfo field => field.IsPublic,
                 PropertyInfo field => field.IsPublic(),
+                ConstructorInfo field => field.IsPublic,
+                MethodInfo method => method.IsPublic,
                 _ => false
             };
         }
 
         public static bool IsStatic(this MemberInfo member)
         {
-            throw new NotImplementedException();
+            return member switch
+            {
+                FieldInfo field => field.IsStatic,
+                PropertyInfo field => field.GetMethod.IsStatic,
+                MethodInfo method => method.IsStatic,
+                _ => false
+            };
         }
 
         public static bool IsTypeParameter(this MemberInfo member)
@@ -330,6 +338,7 @@ namespace Linefusion.Generators.Editor.CodeModel
 
             public IClass? BaseClass => From(value.BaseType?.GetTypeInfo());
 
+            public IEnumerable<IMethod> AllConstructors => Method.From(value.GetConstructors());
             public IEnumerable<IMethod> Constructors => Method.From(value.DeclaredConstructors);
             public IEnumerable<IEvent> Events => Event.From(value.DeclaredEvents);
             public IEnumerable<IField> Fields => Field.From(value.DeclaredFields);
@@ -699,14 +708,14 @@ namespace Linefusion.Generators.Editor.CodeModel
             public override string FullName => mbase.Name;
 
             private Method(MethodBase ctx)
-                : base(ctx.DeclaringType.GetTypeInfo())
+                : base(ctx)
             {
                 this.mbase = ctx;
                 this.minfo = ctx as MethodInfo;
             }
 
             private Method(MethodInfo ctx)
-                : base(ctx.DeclaringType.GetTypeInfo())
+                : base(ctx)
             {
                 this.minfo = ctx;
                 this.mbase = ctx;
@@ -737,6 +746,8 @@ namespace Linefusion.Generators.Editor.CodeModel
         {
             private readonly TypeInfo value;
 
+
+
             public NamedType(TypeInfo value)
                 : base(value)
             {
@@ -761,6 +772,8 @@ namespace Linefusion.Generators.Editor.CodeModel
         public class Parameter : NamedType, IParameter
         {
             private readonly ParameterInfo value;
+
+            public override string Name => value.Name;
 
             public Parameter(ParameterInfo value)
                 : base(value.ParameterType.GetTypeInfo())
@@ -825,6 +838,7 @@ namespace Linefusion.Generators.Editor.CodeModel
                 this.value = value;
             }
 
+            public IEnumerable<IMethod> AllConstructors => Method.From(value.GetConstructors());
             public IEnumerable<IMethod> Constructors => Method.From(value.DeclaredConstructors);
             public IEnumerable<IEvent> Events => Event.From(value.DeclaredEvents);
             public IEnumerable<IField> Fields => Field.From(value.DeclaredFields);
@@ -853,12 +867,10 @@ namespace Linefusion.Generators.Editor.CodeModel
             }
         }
 
-        public class Type : SymbolBase, IType, ITypeReferencedByMember
+        public class Type : ISymbolBase, IType, ITypeReferencedByMember
         {
             private readonly TypeInfo value;
-
             public Type(TypeInfo value)
-                : base(value)
             {
                 this.value = value;
             }
@@ -887,7 +899,62 @@ namespace Linefusion.Generators.Editor.CodeModel
             public IEnumerable<IType> TypeArguments =>
                 Type.From(value.GetGenericArguments().Select(t => t.GetTypeInfo()));
 
-            public override string Name => value.Name;
+            public virtual string Name => value.Name;
+            public virtual string FullName => value.FullName;
+            /*
+            {
+                get
+                {
+                    var prefix = "";
+                    if (string.IsNullOrEmpty(Namespace) == false)
+                    {
+                        prefix = Namespace + ".";
+                    }
+                    return $"{prefix}{this.BareName}";
+                }
+            }*/
+            public string Namespace => value.Namespace;
+
+
+            public IEnumerable<IAttribute> Attributes => Attribute.From(value.CustomAttributes);
+            public INamedType? ContainingType => NamedType.From(value.DeclaringType.GetTypeInfo());
+            public IDocumentationCommentXml DocComment => new DocumentationCommentXml();
+
+            public bool IsAbstract => value.IsAbstract();
+            public bool IsArray => value.IsArray();
+            public bool IsErrorType => value.IsErrorType();
+            public bool IsPublic => value.IsPublic();
+            public bool IsStatic => value.IsStatic();
+            public bool IsTypeParameter => value.IsTypeParameter();
+            public bool IsVirtual => value.IsVirtual();
+
+            public bool IsEvent => value.IsAssignableTo<EventInfo>();
+            public bool IsField => value.IsAssignableTo<FieldInfo>();
+            public bool IsMethod => value.IsAssignableTo<MethodInfo>();
+            public bool IsProperty => value.IsAssignableTo<PropertyInfo>();
+
+            public string BareName
+            {
+                get
+                {
+                    string name = Name;
+                    int prefixLength = 0;
+
+                    for (int i = 0; i < name.Length; ++i)
+                    {
+                        if (!(char.IsLetterOrDigit(Name[i]) || Name[i] == '_'))
+                        {
+                            break;
+                        }
+                        prefixLength++;
+                    }
+
+                    return name[..prefixLength];
+                }
+            }
+
+            public IEnumerable<ILocation> Locations => Enumerable.Empty<ILocation>();
+            public string SourceCode => "";
 
             ISymbolBase? ITypeReferencedByMember.Parent => null;
 
@@ -905,6 +972,7 @@ namespace Linefusion.Generators.Editor.CodeModel
                 return type.Select(From).Where(v => v != null).ToArray()!;
             }
         }
+
 
         public class SymbolBase : ISymbolBase
         {
@@ -928,7 +996,19 @@ namespace Linefusion.Generators.Editor.CodeModel
             public bool IsProperty => member is PropertyInfo;
 
             public virtual string Name => member.Name;
-            public virtual string FullName => member.Name;
+            public virtual string FullName
+            {
+                get
+                {
+                    var prefix = "";
+                    if (string.IsNullOrEmpty(Namespace) == false)
+                    {
+                        prefix = Namespace + ".";
+                    }
+                    return $"{prefix}{this.BareName}";
+                }
+            }
+
             public string BareName
             {
                 get
@@ -949,7 +1029,7 @@ namespace Linefusion.Generators.Editor.CodeModel
                 }
             }
 
-            public string? Namespace => member.GetMemberType()?.Namespace?.ToString();
+            public virtual string? Namespace => member.GetMemberType()?.Namespace?.ToString();
 
             public IEnumerable<ILocation> Locations => Enumerable.Empty<ILocation>();
             public string SourceCode => "";

@@ -55,7 +55,6 @@ namespace Linefusion.Generators.Editor
                     .Select(Assembly.Load)
                     .Select(v =>
                     {
-                        Debug.Log("Assembly: " + v.FullName);
                         return v;
                     })
                     .ToArray();

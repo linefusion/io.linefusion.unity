@@ -67,7 +67,7 @@
       OverwriteReadOnlyFiles="true"
       Retries="0"
       RetryDelayMilliseconds="1000"
-      ContinueOnError="true"
+      ContinueOnError="false"
     />
   </Target>
 

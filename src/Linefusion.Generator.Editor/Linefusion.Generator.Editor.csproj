@@ -16,6 +16,8 @@
     <UnityOutputAssembly Include="$(TargetDir)/Microsoft.Bcl*.dll" />
     <UnityOutputAssembly Include="$(TargetDir)/Microsoft.CodeAnalysis*.dll" />
     <UnityOutputAssembly Include="$(TargetDir)/System.*.dll" />
+    <UnityOutputAssembly Include="$(TargetDir)/Jint*.dll" />
+    <UnityOutputAssembly Include="$(TargetDir)/Esprima*.dll" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,6 +29,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Jint" Version="3.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="System.Text.Json" Version="8.0.2"/>
     <PackageReference Include="System.Diagnostics.Tools" Version="4.3.0" />

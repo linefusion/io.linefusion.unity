@@ -1,16 +1,15 @@
-using UnityEngine;
+using System;
+using System.IO;
+using System.Reflection;
+using Linefusion.Generator;
+using Linefusion.Generator.IO;
+using Linefusion.Generators.Functions;
+using Microsoft.CodeAnalysis;
+using NTypewriter.Runtime.CodeModel;
+using Scriban.Runtime;
 using UnityEditor;
 using UnityEditor.AssetImporters;
-using System.IO;
-using Linefusion.Generator;
-using System;
-using Scriban.Runtime;
-using Linefusion.Generators.Functions;
-using Linefusion.Generator.IO;
-using System.Reflection;
-using NTypewriter.Runtime.CodeModel;
-using Microsoft.CodeAnalysis;
-
+using UnityEngine;
 
 namespace Linefusion.Generators.Editor
 {
@@ -19,25 +18,50 @@ namespace Linefusion.Generators.Editor
         [MenuItem("Linefusion/Generators/Generate All", false)]
         public static void Generate()
         {
-            var assets = AssetDatabase.FindAssets("t:" + typeof(Template).FullName);
-            try {
-                    
-                AssetDatabase.StartAssetEditing();
+            Generate(true);
+        }
 
-                foreach (var asset in assets)
+        public static void Generate(bool import)
+        {
+            try
+            {
+                var assets = AssetDatabase.FindAssets("t:" + typeof(Template).FullName);
+                try
                 {
-                    var path = AssetDatabase.GUIDToAssetPath(asset);
-                    var template = AssetDatabase.LoadAssetAtPath<Template>(path);
-                    if (template != null)
+                    AssetDatabase.StartAssetEditing();
+
+                    foreach (var asset in assets)
                     {
-                        Generate(template, path);
+                        var path = AssetDatabase.GUIDToAssetPath(asset);
+                        Generate(path, import);
                     }
                 }
-                
-            } catch (Exception e) {
+                catch (Exception e)
+                {
+                    Debug.LogException(e);
+                }
+                finally
+                {
+                    AssetDatabase.StopAssetEditing();
+                }
+            }
+            catch (Exception e)
+            {
                 Debug.LogException(e);
-            } finally {
-                AssetDatabase.StopAssetEditing();
+            }
+        }
+
+        public static void Generate(string path, bool import = true)
+        {
+            if (import)
+            {
+                AssetDatabase.ImportAsset(path);
+            }
+
+            var template = AssetDatabase.LoadAssetAtPath<Template>(path);
+            if (template != null && template.Type.HasFlag(TemplateType.Generator))
+            {
+                Generate(template, path);
             }
         }
 
@@ -48,21 +72,32 @@ namespace Linefusion.Generators.Editor
 
             try
             {
-
                 var globals = TemplateObject2.Create();
-                
-                globals.Import("typeof", (object v) => v switch {
-                    Type t => t,
-                    _ => v.GetType()
-                });
 
-                globals.Import("typestr", new Func<object, object>((object v) => v switch {
-                    Type t => t.FullName,
-                    string s => s,
-                    _ => v.GetType().FullName
-                }));
+                globals.Import(
+                    "typeof",
+                    (object v) =>
+                        v switch
+                        {
+                            Type t => t,
+                            _ => v.GetType()
+                        }
+                );
 
-                globals.Import("instanceof", (object v, Type t) => t.IsAssignableFrom(v.GetType())); 
+                globals.Import(
+                    "typestr",
+                    new Func<object, object>(
+                        (object v) =>
+                            v switch
+                            {
+                                Type t => t.FullName,
+                                string s => s,
+                                _ => v.GetType().FullName
+                            }
+                    )
+                );
+
+                globals.Import("instanceof", (object v, Type t) => t.IsAssignableFrom(v.GetType()));
 
                 var exports = TemplateObject2
                     .Create()
@@ -70,23 +105,34 @@ namespace Linefusion.Generators.Editor
                     .Set<JsonFunctions>("json")
                     .Set<FileFunctions>("file")
                     .Set<CsharpFunctions>("csharp")
-                    .Set("dotnet", TemplateObject2.Create()
-                        .Set<ReflectionFunctions>("reflection")
-                        .Set("type", TemplateObject2.Wrap(Type.GetType("System.Type")))
-                        .Set("member_info", TemplateObject2.Wrap(Type.GetType("System.Reflection.MemberInfo")))
-                        .Merge(globals)
+                    .Set(
+                        "dotnet",
+                        TemplateObject2
+                            .Create()
+                            .Set<ReflectionFunctions>("reflection")
+                            .Set("type", TemplateObject2.Wrap(Type.GetType("System.Type")))
+                            .Set(
+                                "member_info",
+                                TemplateObject2.Wrap(Type.GetType("System.Reflection.MemberInfo"))
+                            )
+                            .Merge(globals)
                     )
                     .Set("input", template?.Input, true)
-                    .Set("context",
-                        TemplateObject2.Create()
+                    .Set(
+                        "context",
+                        TemplateObject2
+                            .Create()
                             .Set("filename", file, true)
                             .Set("directory", Path.GetDirectoryName(file), true)
-                );              
+                    );
 
                 var renderer = new TemplateRenderer(root, new TemplateLoader(root));
-                var result = renderer.Render(template?.Language ?? TemplateLanguage.Scriban, template?.Contents ?? "", file, new[] {
-                    exports, globals
-                });
+                var result = renderer.Render(
+                    template?.Language ?? TemplateLanguage.Scriban,
+                    template?.Contents ?? "",
+                    file,
+                    new[] { exports, globals }
+                );
             }
             catch (Exception e)
             {
@@ -94,5 +140,4 @@ namespace Linefusion.Generators.Editor
             }
         }
     }
-
 }

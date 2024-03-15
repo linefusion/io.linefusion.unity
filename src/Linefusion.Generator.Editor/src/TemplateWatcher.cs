@@ -1,22 +1,25 @@
-using UnityEngine;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using Linefusion.Generator;
 using UnityEditor;
 using UnityEditor.AssetImporters;
-using System.IO;
-
-using Linefusion.Generator;
-using System.Diagnostics;
-
+using UnityEngine;
 using Debug = UnityEngine.Debug;
-using System;
-using System.Linq;
 
 namespace Linefusion.Generators.Editor
 {
     [InitializeOnLoad]
     public class TemplateWatcher
     {
-        private static FileSystemWatcher? watcher = null;
-        private static readonly string[] extensions = new string[] {
+        private static readonly List<FileSystemWatcher> watchers = new();
+
+        private static readonly HashSet<string> watchedFiles = new();
+
+        private static readonly string[] extensions = new string[]
+        {
             "liquid",
             "scriban",
             "scriban-cs",
@@ -52,22 +55,37 @@ namespace Linefusion.Generators.Editor
         {
             RegisterExtensions();
 
-            if (watcher != null)
+            foreach (var watcher in watchers)
             {
                 watcher.Dispose();
-                watcher = null;
             }
 
-            watcher = new FileSystemWatcher(UnityUtils.AssetsDir.Value)
+            watchers.Clear();
+
+            foreach (var extension in extensions)
             {
-                NotifyFilter = NotifyFilters.Attributes
-                                  | NotifyFilters.CreationTime
-                                  | NotifyFilters.DirectoryName
-                                  | NotifyFilters.FileName
-                                  | NotifyFilters.LastAccess
-                                  | NotifyFilters.LastWrite
-                                  | NotifyFilters.Security
-                                  | NotifyFilters.Size
+                watchers.Add(CreateFileWatcher(UnityUtils.AssetsDir.Value, $"*.{extension}"));
+                watchers.Add(CreateFileWatcher(UnityUtils.PackagesDir.Value, $"*.{extension}"));
+            }
+
+            watchedFiles.Clear();
+        }
+
+        public static void WatchFile(string path)
+        {
+            path = Path.GetFullPath(path);
+            watchedFiles.Add(path);
+        }
+
+        private static FileSystemWatcher CreateFileWatcher(string path, string filter)
+        {
+            var watcher = new FileSystemWatcher(path)
+            {
+                Filter = filter,
+                InternalBufferSize = 1024 * 64,
+                IncludeSubdirectories = true,
+                NotifyFilter =
+                    NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.Size,
             };
 
             watcher.Changed += (sender, args) =>
@@ -121,55 +139,37 @@ namespace Linefusion.Generators.Editor
 
             watcher.IncludeSubdirectories = true;
             watcher.EnableRaisingEvents = true;
+
+            return watcher;
         }
 
         private static bool IsTemplateAsset(string assetPath)
         {
-            // Debug.Log("IsTemplate? " + assetPath);
-
             var relativePath = UnityUtils.GetRelativeProjectPath(assetPath);
             var extension = Path.GetExtension(relativePath).TrimStart('.');
             if (!extensions.Contains(extension))
             {
-                // Debug.Log("Unknown extension: " + extension);
                 return false;
             }
 
-            var guid = AssetDatabase.AssetPathToGUID(relativePath, AssetPathToGUIDOptions.OnlyExistingAssets);
+            var guid = AssetDatabase.AssetPathToGUID(
+                relativePath,
+                AssetPathToGUIDOptions.OnlyExistingAssets
+            );
             if (string.IsNullOrEmpty(guid))
             {
-                // Debug.Log("Guid is null or empty");
                 return false;
             }
 
-            try
-            {
-                AssetDatabase.ImportAsset(relativePath, ImportAssetOptions.ForceUpdate);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError("Failed to check if asset is a template: " + relativePath + " - " + e.Message + " - " + e.StackTrace);
-                Debug.LogException(e);
-            }
-            finally
-            {
-            }
             var assetType = AssetDatabase.GetMainAssetTypeAtPath(relativePath);
             var templateType = typeof(Template);
-            // Debug.Log("Is it? " + assetType.FullName + " == " + templateType.FullName);
+
             return assetType == templateType;
         }
 
         private static Template GetTemplate(string path)
         {
             var relativePath = UnityUtils.GetRelativeProjectPath(path);
-            try
-            {
-                AssetDatabase.ImportAsset(relativePath, ImportAssetOptions.ForceUpdate);
-            }
-            finally
-            {
-            }
             return AssetDatabase.LoadAssetAtPath<Template>(relativePath);
         }
 
@@ -178,9 +178,17 @@ namespace Linefusion.Generators.Editor
             try
             {
                 var template = GetTemplate(args.FullPath);
-                if (template != null && template.AutoGenerate)
+                if (template != null)
                 {
-                    TemplateGenerator.Generate(template, args.FullPath);
+                    if (template.Type.HasFlag(TemplateType.Include))
+                    {
+                        TemplateGenerator.Generate(false);
+                    }
+                    else if (template.Type.HasFlag(TemplateType.Generator))
+                    {
+                        template.Contents = File.ReadAllText(args.FullPath);
+                        TemplateGenerator.Generate(template, args.FullPath);
+                    }
                 }
             }
             catch (Exception e)
@@ -191,22 +199,20 @@ namespace Linefusion.Generators.Editor
 
         private static void OnCreated(object sender, FileSystemEventArgs args)
         {
-            // Debug.Log("OnCreated: " + args.FullPath);
         }
 
         private static void OnDeleted(object sender, FileSystemEventArgs args)
         {
-            // Debug.Log("OnDeleted: " + args.FullPath);
         }
 
         private static void OnRenamed(object sender, RenamedEventArgs args)
         {
-            // Debug.Log("OnRenamed: " + args.FullPath);
         }
 
         private static void OnError(object sender, ErrorEventArgs args)
         {
-            // Debug.Log("OnError: " + args.GetException().Message);
+            Debug.LogError("Template Watch Exception: " +args.GetException().Message);
+            Debug.LogException(args.GetException());
         }
     }
 }
