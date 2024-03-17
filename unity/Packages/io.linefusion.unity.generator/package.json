@@ -1,6 +1,6 @@
 {
   "name": "io.linefusion.unity.generator",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "displayName": "Linefusion Generator",
   "description": "Linefusion Generator",
   "unity": "2022.3",
@@ -22,13 +22,12 @@
     "email": "wolfulus@linefusion.io",
     "url": "https://linefusion.io"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "samples": [
-      {
-          "displayName": "Simple Generator",
-          "description": "Contains a simple generator that outputs a file.",
-          "path": "Samples~/SimpleGenerator"
-      }
+    {
+      "displayName": "Simple Generator",
+      "description": "Contains a simple generator that outputs a file.",
+      "path": "Samples~/SimpleGenerator"
+    }
   ]
 }
