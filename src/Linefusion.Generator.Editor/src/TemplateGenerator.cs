@@ -26,23 +26,14 @@ namespace Linefusion.Generators.Editor
             try
             {
                 var assets = AssetDatabase.FindAssets("t:" + typeof(Template).FullName);
-                try
+                foreach (var asset in assets)
                 {
-                    AssetDatabase.StartAssetEditing();
+                    Generate(AssetDatabase.GUIDToAssetPath(asset), import);
+                }
 
-                    foreach (var asset in assets)
-                    {
-                        var path = AssetDatabase.GUIDToAssetPath(asset);
-                        Generate(path, import);
-                    }
-                }
-                catch (Exception e)
+                if (import)
                 {
-                    Debug.LogException(e);
-                }
-                finally
-                {
-                    AssetDatabase.StopAssetEditing();
+                    FileFunctions.Reimport();
                 }
             }
             catch (Exception e)
@@ -67,8 +58,8 @@ namespace Linefusion.Generators.Editor
 
         public static void Generate(Template? template, string path)
         {
-            var root = new PathValue(Path.Combine(Application.dataPath, "..")).Absolute;
-            var file = new PathValue(Path.Combine(root, path)).Absolute;
+            var root = new SafePath(Path.Combine(Application.dataPath, "..")).Absolute;
+            var file = new SafePath(Path.Combine(root, path)).Absolute;
 
             try
             {
@@ -104,6 +95,7 @@ namespace Linefusion.Generators.Editor
                     .Set<UnityFunctions>("unity")
                     .Set<JsonFunctions>("json")
                     .Set<FileFunctions>("file")
+                    .Set<DirFunctions>("directory")
                     .Set<CsharpFunctions>("csharp")
                     .Set(
                         "dotnet",
@@ -138,6 +130,11 @@ namespace Linefusion.Generators.Editor
             {
                 Debug.LogException(e);
             }
+        }
+
+        public static void Flush()
+        {
+            FileFunctions.Reimport();
         }
     }
 }

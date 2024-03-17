@@ -13,7 +13,7 @@ namespace Linefusion.Generators.Editor
 {
     public class TemplateLoader : ITemplateLoader
     {
-        private readonly PathValue root;
+        private readonly SafePath root;
 
         public TemplateLoader(string root)
         {
@@ -22,9 +22,9 @@ namespace Linefusion.Generators.Editor
 
         public string GetPath(TemplateContext context, SourceSpan callerSpan, string templateName)
         {
-            var workingDir = new PathValue(context.CurrentSourceFile).Parent;
+            var workingDir = new SafePath(context.CurrentSourceFile).Parent;
 
-            var templatePath = new PathValue(templateName);
+            var templatePath = new SafePath(templateName);
             if (templatePath.IsAbsolute)
             {
                 return templatePath;
@@ -32,12 +32,12 @@ namespace Linefusion.Generators.Editor
 
             if (templatePath.IsRooted)
             {
-                using var path = PathUtils.UsePath(UnityUtils.ProjectDir);
+                using var path = SafeIO.UsePath(UnityUtils.ProjectDir);
                 templatePath = templatePath.Absolute;
             }
             else
             {
-                using var path = PathUtils.UsePath(workingDir);
+                using var path = SafeIO.UsePath(workingDir);
                 templatePath = templatePath.Absolute;
             }
 

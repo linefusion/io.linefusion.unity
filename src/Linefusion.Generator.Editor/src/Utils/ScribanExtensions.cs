@@ -4,8 +4,11 @@ using System.Dynamic;
 using System.Linq;
 using System.Threading;
 
+using Linefusion.Generator.IO;
+
 using Newtonsoft.Json.Linq;
 
+using Scriban;
 using Scriban.Helpers;
 using Scriban.Runtime;
 
@@ -13,12 +16,17 @@ using UnityEngine;
 
 namespace Linefusion.Generators.Functions
 {
-
     /// <summary>
     /// Extensions attached to an <see cref="JsonElement"/>.
     /// </summary>
     internal static class ScribanExtensions
     {
+        public static IDisposable UseCurrentFileAsWorkingDir(this TemplateContext context)
+        {
+            var basePath = new SafePath(context.CurrentSourceFile).Parent;
+            return SafeIO.UsePath(basePath);
+        }
+
         internal static dynamic ToObject(this object value)
         {
             if (value is ScriptObject scriptObject)
