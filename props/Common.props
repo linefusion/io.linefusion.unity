@@ -1,8 +1,9 @@
 <Project>
+
   <PropertyGroup Condition="'$(Version)' == ''">
     <Version>0.0.1</Version>
   </PropertyGroup>
-  
+
   <PropertyGroup Condition="'$(Description)' == ''">
     <Description>A package built by Linefusion</Description>
   </PropertyGroup>
@@ -10,24 +11,14 @@
   <PropertyGroup>
     <Version>$(Version)</Version>
     <TargetFramework>netstandard2.1</TargetFramework>
-
     <Authors>Linefusion</Authors>
     <Company>Linefusion</Company>
     <Copyright>(c) Linefusion</Copyright>
     <Description>$(Description)</Description>
-    
     <NeutralLanguage>en</NeutralLanguage>
-
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    
-    <!--
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
-    -->
-
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  
 </Project>

@@ -13,7 +13,9 @@
   </ItemGroup>
 
   <Target Name="Bootstrap">
-    <Exec Command="slngen -o ../Linefusion.sln --launch false" />
+    <Exec Command="dotnet tool restore -v q" />
+    <Exec Command="pnpm install --silent" Condition="!Exists('${WorkspaceDir}/node_modules')" />
+    <Exec Command="dotnet slngen -o ../Linefusion.sln --launch false" />
     <CallTarget Targets="Build"></CallTarget>
     <CallTarget Targets="UnityGenerateMetadata"></CallTarget>
     <CallTarget Targets="UnityRefreshAssets"></CallTarget>

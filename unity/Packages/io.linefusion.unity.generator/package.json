@@ -1,9 +1,6 @@
 {
   "name": "io.linefusion.unity.generator",
   "version": "0.0.7",
-  "publishConfig": {
-    "access": "public"
-  },
   "displayName": "Linefusion Generator",
   "description": "Linefusion Generator",
   "unity": "2022.3",
