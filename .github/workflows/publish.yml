@@ -64,3 +64,4 @@ jobs:
           git config --global user.email "br@linefusion.io"
           git tag -a v${CURRENT_VERSION} -m "v${CURRENT_VERSION}"
           git push origin v${CURRENT_VERSION}
+          pnpm publish -r
