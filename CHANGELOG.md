@@ -1,5 +1,11 @@
 # io.linefusion.unity
 
+## 0.0.9
+
+### Patch Changes
+
+- a11858c: auto publishing to npm
+
 ## 0.0.8
 
 ### Patch Changes
