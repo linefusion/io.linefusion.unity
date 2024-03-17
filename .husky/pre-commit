@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+vars=$(env | grep "GITKRAKEN_")
+if [ "$vars" != "" ]; then
+  echo "GitKraken detected, skipping pre-commit hook"
+  exit 0
+fi
+
+exec < /dev/tty || true
+
+pnpm changeset

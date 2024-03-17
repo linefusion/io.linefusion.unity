@@ -2,6 +2,8 @@ namespace Linefusion.Generators.Editor
 {
     using Linefusion.Generator;
     using Linefusion.Generators;
+    using Linefusion.Generators.Functions;
+
     using UnityEditor;
     using UnityEditor.UIElements;
     using UnityEngine.UIElements;
@@ -30,6 +32,7 @@ namespace Linefusion.Generators.Editor
                 {
                     var template = this.target as Template;
                     TemplateGenerator.Generate(template, AssetDatabase.GetAssetPath(target));
+                    TemplateGenerator.Flush();
                 };
                 root.Add(run);
             }
@@ -40,6 +43,7 @@ namespace Linefusion.Generators.Editor
                 trigger.clicked += () =>
                 {
                     TemplateGenerator.Generate();
+                    TemplateGenerator.Flush();
                 };
                 root.Add(trigger);
             }

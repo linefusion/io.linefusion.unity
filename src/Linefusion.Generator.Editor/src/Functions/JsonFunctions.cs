@@ -1,26 +1,6 @@
-
-
-using System.IO;
-
-using Linefusion.Generator;
-using Linefusion.Generator.IO;
-using Linefusion.Generator.Paths;
-
 using Scriban;
-
-using UnityEditor;
-
 using UnityEngine;
-using Scriban.Runtime;
-using System;
-using System.Text;
-using System.Collections;
-using Scriban.Helpers;
-
 using Newtonsoft.Json;
-using System.Text.Json;
-using System.Linq;
-using Newtonsoft.Json.Linq;
 
 namespace Linefusion.Generators.Functions
 {

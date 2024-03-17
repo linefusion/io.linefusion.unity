@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Linefusion.Generator;
+using Linefusion.Generators.Functions;
 using UnityEditor;
 using UnityEditor.AssetImporters;
 using UnityEngine;
@@ -145,7 +146,7 @@ namespace Linefusion.Generators.Editor
 
         private static bool IsTemplateAsset(string assetPath)
         {
-            var relativePath = UnityUtils.GetRelativeProjectPath(assetPath);
+            var relativePath = UnityUtils.GetPathRelativeToProject(assetPath);
             var extension = Path.GetExtension(relativePath).TrimStart('.');
             if (!extensions.Contains(extension))
             {
@@ -169,7 +170,7 @@ namespace Linefusion.Generators.Editor
 
         private static Template GetTemplate(string path)
         {
-            var relativePath = UnityUtils.GetRelativeProjectPath(path);
+            var relativePath = UnityUtils.GetPathRelativeToProject(path);
             return AssetDatabase.LoadAssetAtPath<Template>(relativePath);
         }
 
@@ -189,6 +190,7 @@ namespace Linefusion.Generators.Editor
                         template.Contents = File.ReadAllText(args.FullPath);
                         TemplateGenerator.Generate(template, args.FullPath);
                     }
+                    TemplateGenerator.Flush();
                 }
             }
             catch (Exception e)
@@ -197,21 +199,15 @@ namespace Linefusion.Generators.Editor
             }
         }
 
-        private static void OnCreated(object sender, FileSystemEventArgs args)
-        {
-        }
+        private static void OnCreated(object sender, FileSystemEventArgs args) { }
 
-        private static void OnDeleted(object sender, FileSystemEventArgs args)
-        {
-        }
+        private static void OnDeleted(object sender, FileSystemEventArgs args) { }
 
-        private static void OnRenamed(object sender, RenamedEventArgs args)
-        {
-        }
+        private static void OnRenamed(object sender, RenamedEventArgs args) { }
 
         private static void OnError(object sender, ErrorEventArgs args)
         {
-            Debug.LogError("Template Watch Exception: " +args.GetException().Message);
+            Debug.LogError("Template Watch Exception: " + args.GetException().Message);
             Debug.LogException(args.GetException());
         }
     }

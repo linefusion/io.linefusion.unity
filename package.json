@@ -1,11 +1,19 @@
 {
-    "name": "io.linefusion.unity",
-    "private": true,
-    "version": "0.0.0",
-    "scripts": {
-        "commit": ""
-    },
-    "dependencies": {
-        "@changesets/cli": "^2.27.1"
+  "name": "io.linefusion.unity",
+  "private": true,
+  "version": "0.0.7",
+  "scripts": {
+    "commit": "changeset",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.1",
+    "husky": "9.0.11"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "husky@9.0.11": "patches/husky@9.0.11.patch",
+      "@changesets/git@3.0.0": "patches/@changesets__git@3.0.0.patch"
     }
+  }
 }

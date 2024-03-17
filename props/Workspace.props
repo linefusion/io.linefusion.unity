@@ -1,9 +1,9 @@
 <Project>
-  
+
   <PropertyGroup>
     <WorkspaceDir>$([MSBuild]::GetPathOfFileAbove('Directory.Build.props'))</WorkspaceDir>
     <WorkspaceDir>$([System.IO.Path]::GetDirectoryName($(WorkspaceDir)))</WorkspaceDir>
-    <WorkspaceProps>$([System.IO.Path]::GetFullPath('$(WorkspaceDir)/props'))</WorkspaceProps>    
+    <WorkspaceProps>$([System.IO.Path]::GetFullPath('$(WorkspaceDir)/props'))</WorkspaceProps>
   </PropertyGroup>
-  
+
 </Project>

@@ -23,7 +23,7 @@ namespace Linefusion.Generator
 
         public object Render(TemplateLanguage language, string source, string path, ScriptObject[] objs)
         {
-            path = new PathValue(path).Absolute;
+            path = new SafePath(path).Absolute;
 
             var lang = Scriban.Parsing.ScriptLang.Liquid;
             if (language == TemplateLanguage.Scriban)

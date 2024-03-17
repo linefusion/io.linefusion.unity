@@ -3,44 +3,32 @@ using System.IO;
 using Linefusion.Generator;
 using Linefusion.Generator.IO;
 
+using UnityEditor;
+
 using UnityEngine;
 
 namespace Linefusion.Generators
 {
+    [InitializeOnLoad]
     public static class UnityUtils
     {
-        public static PathValue ProjectDir
+        static UnityUtils()
         {
-            get
-            {
-                return Path.GetFullPath(Path.Combine(AssetsDir, ".."));
-            }
+            SafeIO.Root = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
         }
 
-        public static PathValue PackagesDir
+        public static SafePath ProjectDir => new SafePath(".");
+        public static SafePath PackagesDir => new SafePath("Packages");
+        public static SafePath AssetsDir => new SafePath("Assets");
+
+        public static string GetPathRelativeToProject(string path)
         {
-            get
-            {
-                return Path.GetFullPath(Path.Combine(AssetsDir, "../Packages"));
-            }
+            return SafeIO.GetRelativePath(ProjectDir, path);
         }
 
-        public static PathValue AssetsDir
+        public static string GetPathRelativeToAssets(string path)
         {
-            get
-            {
-                return Path.GetFullPath(Path.Combine(Application.dataPath));
-            }
-        }
-
-        public static string GetRelativeProjectPath(string path)
-        {
-            return Path.GetRelativePath(UnityUtils.ProjectDir, path);
-        }
-
-        public static string GetRelativeAssetsPath(string path)
-        {
-            return Path.GetRelativePath(UnityUtils.AssetsDir, path);
+            return SafeIO.GetRelativePath(AssetsDir, path);
         }
     }
 }

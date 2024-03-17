@@ -1,0 +1,44 @@
+diff --git a/dist/changesets-git.cjs.js b/dist/changesets-git.cjs.js
+index 415542c09ff1a3dbfc3eef7ff52f9d592a3be334..a79556cabaaa8965b0b88e2f543c9bc0758bf1e9 100644
+--- a/dist/changesets-git.cjs.js
++++ b/dist/changesets-git.cjs.js
+@@ -32,7 +32,10 @@ async function add(pathToFile, cwd) {
+ async function commit(message, cwd) {
+   const gitCmd = await spawn__default["default"]("git", ["commit", "-m", message, "--allow-empty"], {
+     cwd
+-  });
++  });  
++  if (gitCmd.code !== 0) {
++    console.log(gitCmd.stderr.toString());
++  }
+   return gitCmd.code === 0;
+ }
+ async function getAllTags(cwd) {
+diff --git a/dist/changesets-git.esm.js b/dist/changesets-git.esm.js
+index 58f76fe0cb21c35fa600e83f20fbbd23ee7d0ba0..c61305ba3bf76f4e81729a6caee5c2f1d15dfc3a 100644
+--- a/dist/changesets-git.esm.js
++++ b/dist/changesets-git.esm.js
+@@ -21,6 +21,9 @@ async function commit(message, cwd) {
+   const gitCmd = await spawn("git", ["commit", "-m", message, "--allow-empty"], {
+     cwd
+   });
++  if (gitCmd.code !== 0) {
++    console.log(gitCmd.stderr.toString());
++  }
+   return gitCmd.code === 0;
+ }
+ async function getAllTags(cwd) {
+diff --git a/src/index.ts b/src/index.ts
+index 7e3aee53439f3724886eacc2bb9ea8b9abc6b6cf..06b39b14480bcba12d8c5dd5b321e3317cbe3aca 100644
+--- a/src/index.ts
++++ b/src/index.ts
+@@ -21,6 +21,9 @@ export async function commit(message: string, cwd: string) {
+     ["commit", "-m", message, "--allow-empty"],
+     { cwd }
+   );
++  if (gitCmd.code !== 0) {
++    console.log(gitCmd.stderr.toString());
++  }
+   return gitCmd.code === 0;
+ }
+ 

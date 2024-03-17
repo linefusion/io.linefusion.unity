@@ -34,7 +34,7 @@ namespace Linefusion.Generators.Editor
                 return AssetDatabase.LoadAssetAtPath<T>(fullPath);
             }
         }
-        
+
         public static bool Exists(string pathFromRoot)
         {
             return ExistsInPackages(pathFromRoot) || ExistsInAssets(pathFromRoot);
