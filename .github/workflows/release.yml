@@ -76,4 +76,4 @@ jobs:
           git tag -a v${CURRENT_VERSION} -m "v${CURRENT_VERSION}"
           git push origin v${CURRENT_VERSION}
           pnpm config set //registry.npmjs.org/:_authToken "${NPM_TOKEN}"
-          pnpm publish -r
+          pnpm publish -r --no-git-checks
