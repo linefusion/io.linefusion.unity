@@ -1,0 +1,63 @@
+name: Tag and Publish
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  changed:
+    runs-on: ubuntu-latest
+    outputs:
+      pkg: ${{ steps.changes.outputs.pkg }}
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dorny/paths-filter@v3
+      id: changes
+      with:
+        filters: |
+          pkg:
+            - 'package.json'
+
+  check-version:
+    name: publish
+    needs: changed
+    runs-on: ubuntu-latest
+    if: needs.changed.outputs.pkg == 'true'
+    steps:
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            package.json
+
+      - id: current_version
+        name: Read current version
+        run: |
+          PACKAGE_VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json').toString()).version)")
+          echo "::debug::Current version: [${PACKAGE_VERSION}]"
+          echo "value=${PACKAGE_VERSION}\n" > $GITHUB_OUTPUT
+
+      - name: Checkout previous commit
+        run: git checkout HEAD^
+
+      - id: previous_version
+        name: Read previous version
+        run: |
+          PACKAGE_VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json').toString()).version)")
+          echo "::debug::Previous version: [${PACKAGE_VERSION}]"
+          echo "value=${PACKAGE_VERSION}\n" > $GITHUB_OUTPUT
+
+      - name: Tag if needed
+        if: steps.current_version.outputs.value != steps.previous_version.outputs.value
+        env:
+          CURRENT_VERSION: ${{ steps.current_version.outputs.value}}
+        run: |
+          git tag -a v${CURRENT_VERSION} -m "v${CURRENT_VERSION}"
