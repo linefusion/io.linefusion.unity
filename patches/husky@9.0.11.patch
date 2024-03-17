@@ -1,0 +1,38 @@
+diff --git a/husky b/husky
+index 86bd0ba5fb984c3ba71e9d4a000100674ddc54bb..5dbc4128222302f56e6a6c82305a037171432dfd 100644
+--- a/husky
++++ b/husky
+@@ -1,7 +1,8 @@
+-#!/usr/bin/env sh
++#!/usr/bin/env bash
+ [ "$HUSKY" = "2" ] && set -x
+-h="${0##*/}"
+-s="${0%/*/*}/$h"
++r="${0//\\//}"
++h="${r##*/}"
++s="${r%/*/*}/$h"
+ 
+ [ ! -f "$s" ] && exit 0
+ 
+@@ -12,7 +13,7 @@ done
+ 
+ [ "${HUSKY-}" = "0" ] && exit 0
+ 
+-sh -e "$s" "$@"
++bash -c "$s" "$@"
+ c=$?
+ 
+ [ $c != 0 ] && echo "husky - $h script failed (code $c)"
+diff --git a/index.mjs b/index.mjs
+index f3a419cd074a5c2b4a5e4b9a77160207a8f72898..274d79fa14965c632dcd3dd3214723c0dfb48394 100644
+--- a/index.mjs
++++ b/index.mjs
+@@ -17,7 +17,7 @@ export default (d = '.husky') => {
+ 	f.mkdirSync(_(), { recursive: true })
+ 	w(_('.gitignore'), '*')
+ 	f.copyFileSync(new URL('husky', import.meta.url), _('h'))
+-	l.forEach(h => w(_(h), `#!/usr/bin/env sh\n. "\${0%/*}/h"`, { mode: 0o755 }))
++	l.forEach(h => w(_(h), `#!/usr/bin/env bash\nh="\${0//\\\\//}"\n. "\${h%/*}/h"`, { mode: 0o755 }))
+ 	w(_('husky.sh'), '')
+ 	return ''
+ }

@@ -1,0 +1,74 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone settings
+        run: |
+          git config --global core.eol lf
+          git config --global core.autocrlf false
+
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Reset files
+        run: |
+          git clean -ffdx && git reset --hard HEAD
+
+      - name: Install PNPM
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'pnpm'
+
+      - name: Install PNPM
+        run: corepack enable pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - id: versions
+        name: Check versions
+        run: |
+          export HUSKY=0
+
+          PACKAGE_VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json').toString()).version)")
+          echo "::debug::Current version: [${PACKAGE_VERSION}]"
+          echo "current_version=${PACKAGE_VERSION}\n" > $GITHUB_OUTPUT
+
+          pnpm changeset version
+
+          PACKAGE_VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json').toString()).version)")
+          echo "::debug::Next version: [${PACKAGE_VERSION}]"
+          echo "next_version=${PACKAGE_VERSION}\n" > $GITHUB_OUTPUT
+
+          cat .husky/_/post-commit
+          echo "-----------------"
+          cat .husky/_/post-checkout
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          title: Release ${{ steps.version.outputs.versions_inline }}
+          committer: Black Rabbit <br@linefusion.io>
+          commit-message: "apply changesets"
+          body: |
+            Apply changesets to prepare for the next release.
+          branch: release
+          delete-branch: true
+          assignees: wolfulus
+
