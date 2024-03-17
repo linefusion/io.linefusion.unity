@@ -1,28 +1,59 @@
-name: Release
+name: Tag and Publish
 
 on:
   push:
     branches:
       - main
 
-concurrency: ${{ github.workflow }}-${{ github.ref }}
-
 jobs:
-  release:
-    name: Release
+  changed:
     runs-on: ubuntu-latest
+    outputs:
+      pkg: ${{ steps.changes.outputs.pkg }}
     steps:
-      - name: Clone settings
-        run: |
-          git config --global core.eol lf
-          git config --global core.autocrlf false
+    - uses: actions/checkout@v4
+    - uses: dorny/paths-filter@v3
+      id: changes
+      with:
+        filters: |
+          pkg:
+            - 'package.json'
 
-      - name: Clone repository
+  check-version:
+    name: publish
+    needs: changed
+    runs-on: ubuntu-latest
+    if: needs.changed.outputs.pkg == 'true'
+    steps:
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            package.json
 
-      - name: Reset files
+      - id: current_version
+        name: Read current version
         run: |
-          git clean -ffdx && git reset --hard HEAD
+          PACKAGE_VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json').toString()).version)")
+          echo "::debug::Current version: [${PACKAGE_VERSION}]"
+          echo "value=${PACKAGE_VERSION}" > $GITHUB_OUTPUT
+
+      - name: Checkout previous commit
+        run: git checkout HEAD^
+
+      - id: previous_version
+        name: Read previous version
+        run: |
+          PACKAGE_VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json').toString()).version)")
+          echo "::debug::Previous version: [${PACKAGE_VERSION}]"
+          echo "value=${PACKAGE_VERSION}" > $GITHUB_OUTPUT
 
       - name: Install PNPM
         uses: pnpm/action-setup@v3
@@ -38,33 +69,14 @@ jobs:
       - name: Install PNPM
         run: corepack enable pnpm
 
-      - name: Install dependencies
-        run: pnpm install
-
-      - id: versions
-        name: Check versions
+      - name: Tag and publish
+        if: steps.current_version.outputs.value != steps.previous_version.outputs.value
+        env:
+          CURRENT_VERSION: ${{ steps.current_version.outputs.value}}
         run: |
-          export HUSKY=0
-
-          PACKAGE_VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json').toString()).version)")
-          echo "::debug::Current version: [${PACKAGE_VERSION}]"
-          echo "current_version=${PACKAGE_VERSION}\n" > $GITHUB_OUTPUT
-
-          pnpm changeset version
-
-          PACKAGE_VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json').toString()).version)")
-          echo "::debug::Next version: [${PACKAGE_VERSION}]"
-          echo "next_version=${PACKAGE_VERSION}\n" > $GITHUB_OUTPUT
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v6
-        with:
-          title: Release ${{ steps.version.outputs.versions_inline }}
-          committer: Black Rabbit <br@linefusion.io>
-          commit-message: "apply changesets"
-          body: |
-            Apply changesets to prepare for the next release.
-          branch: release
-          delete-branch: true
-          assignees: wolfulus
-
+          git config --global user.name "Black Rabbit"
+          git config --global user.email "br@linefusion.io"
+          git tag -a v${CURRENT_VERSION} -m "v${CURRENT_VERSION}"
+          git push origin v${CURRENT_VERSION}
+          pnpm config set //registry.npmjs.org/:_authToken "${NPM_TOKEN}"
+          pnpm publish -r
