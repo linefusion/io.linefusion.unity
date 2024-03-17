@@ -6,6 +6,6 @@ if [ "$vars" != "" ]; then
   exit 0
 fi
 
-exec < /dev/tty || true
+exec >/dev/tty 2>/dev/tty </dev/tty || true
 
 pnpm changeset

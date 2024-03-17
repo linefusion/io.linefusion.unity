@@ -1,7 +1,7 @@
 {
   "name": "io.linefusion.unity",
   "private": true,
-  "version": "0.0.8",
+  "version": "0.0.10",
   "scripts": {
     "commit": "changeset",
     "prepare": "husky"

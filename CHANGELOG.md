@@ -1,5 +1,19 @@
 # io.linefusion.unity
 
+## 0.0.10
+
+### Patch Changes
+
+- 3572659: workflow updates
+- bf2e98e: workflow updates
+- 71e1f21: fix commit tty
+
+## 0.0.9
+
+### Patch Changes
+
+- a11858c: auto publishing to npm
+
 ## 0.0.8
 
 ### Patch Changes

@@ -3,4 +3,4 @@
 "io.linefusion.unity.generator": patch
 ---
 
-auto publishing to npm
+workflow fix
