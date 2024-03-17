@@ -1,5 +1,12 @@
 # io.linefusion.unity
 
+## 0.0.10
+
+### Patch Changes
+
+- 3572659: workflow updates
+- 71e1f21: fix commit tty
+
 ## 0.0.9
 
 ### Patch Changes
