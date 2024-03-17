@@ -1,5 +1,11 @@
 # io.linefusion.unity.generator
 
+## 0.0.7
+
+### Patch Changes
+
+- ad35a54: tests
+
 ## 0.0.6
 
 ### Patch Changes

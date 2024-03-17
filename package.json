@@ -1,11 +1,12 @@
 {
-    "name": "io.linefusion.unity",
-    "private": true,
-    "version": "0.0.0",
-    "scripts": {
-        "commit": ""
-    },
-    "dependencies": {
-        "@changesets/cli": "^2.27.1"
-    }
+  "name": "io.linefusion.unity",
+  "private": true,
+  "version": "0.0.7",
+  "scripts": {
+    "commit": "changeset"
+  },
+  "devDependencies": {
+    "wireit": "0.14.4",
+    "@changesets/cli": "^2.27.1"
+  }
 }
