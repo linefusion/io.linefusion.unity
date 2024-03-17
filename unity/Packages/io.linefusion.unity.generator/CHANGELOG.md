@@ -1,5 +1,11 @@
 # io.linefusion.unity.generator
 
+## 0.0.11
+
+### Patch Changes
+
+- e90a644: workflow fix
+
 ## 0.0.10
 
 ### Patch Changes
