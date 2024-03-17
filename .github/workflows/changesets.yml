@@ -47,17 +47,16 @@ jobs:
           export HUSKY=0
 
           PACKAGE_VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json').toString()).version)")
-          echo "::debug::Current version: [${PACKAGE_VERSION}]"
-          echo "current_version=${PACKAGE_VERSION}\n" > $GITHUB_OUTPUT
+          echo "current_version=${PACKAGE_VERSION}" > $GITHUB_OUTPUT
 
           pnpm changeset version
 
           PACKAGE_VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json').toString()).version)")
-          echo "::debug::Next version: [${PACKAGE_VERSION}]"
-          echo "next_version=${PACKAGE_VERSION}\n" > $GITHUB_OUTPUT
+          echo "next_version=${PACKAGE_VERSION}" > $GITHUB_OUTPUT
 
       - name: Pull Request
         uses: peter-evans/create-pull-request@v6
+        if: steps.versions.outputs.current_version != steps.versions.outputs.next_version
         with:
           title: Apply changesets (v${{ steps.versions.outputs.next_version }})
           author: João <joao@linefusion.io>

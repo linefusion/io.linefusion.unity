@@ -42,7 +42,6 @@ jobs:
         name: Read current version
         run: |
           PACKAGE_VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json').toString()).version)")
-          echo "::debug::Current version: [${PACKAGE_VERSION}]"
           echo "value=${PACKAGE_VERSION}" > $GITHUB_OUTPUT
 
       - name: Checkout previous commit
@@ -52,7 +51,6 @@ jobs:
         name: Read previous version
         run: |
           PACKAGE_VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json').toString()).version)")
-          echo "::debug::Previous version: [${PACKAGE_VERSION}]"
           echo "value=${PACKAGE_VERSION}" > $GITHUB_OUTPUT
 
       - name: Install PNPM
