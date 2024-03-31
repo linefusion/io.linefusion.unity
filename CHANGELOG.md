@@ -1,5 +1,11 @@
 # io.linefusion.unity
 
+## 0.0.14
+
+### Patch Changes
+
+- c86987e: assembly attributes
+
 ## 0.0.13
 
 ### Patch Changes
