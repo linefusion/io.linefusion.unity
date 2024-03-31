@@ -382,6 +382,7 @@ namespace Linefusion.Generators.Editor.CodeModel
             }
 
             public Assembly Assembly => assembly;
+            public IEnumerable<IAttribute> Attributes => Attribute.From(assembly.CustomAttributes);
 
             public IEnumerable<IClass> Classes => Class.From(assembly.DefinedTypes);
             public IEnumerable<IDelegate> Delegates => Delegate.From(assembly.DefinedTypes);
