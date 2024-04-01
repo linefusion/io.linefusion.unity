@@ -65,33 +65,9 @@ namespace Linefusion.Generators.Editor
             {
                 var globals = TemplateObject2.Create();
 
-                globals.Import(
-                    "typeof",
-                    (object v) =>
-                        v switch
-                        {
-                            Type t => t,
-                            _ => v.GetType()
-                        }
-                );
-
-                globals.Import(
-                    "typestr",
-                    new Func<object, object>(
-                        (object v) =>
-                            v switch
-                            {
-                                Type t => t.FullName,
-                                string s => s,
-                                _ => v.GetType().FullName
-                            }
-                    )
-                );
-
-                globals.Import("instanceof", (object v, Type t) => t.IsAssignableFrom(v.GetType()));
-
                 var exports = TemplateObject2
                     .Create()
+                    .Set<TypeFunctions>("type")
                     .Set<UnityFunctions>("unity")
                     .Set<JsonFunctions>("json")
                     .Set<FileFunctions>("file")

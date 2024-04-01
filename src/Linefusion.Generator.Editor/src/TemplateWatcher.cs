@@ -19,24 +19,6 @@ namespace Linefusion.Generators.Editor
 
         private static readonly HashSet<string> watchedFiles = new();
 
-        private static readonly string[] extensions = new string[]
-        {
-            "liquid",
-            "scriban",
-            "scriban-cs",
-            "scriban-txt",
-            "scriban-htm",
-            "scriban-html",
-            "sbn-cs",
-            "sbn-txt",
-            "sbn-htm",
-            "sbn-html",
-            "sbn",
-            "sbncs",
-            "sbntxt",
-            "sbnhtm",
-            "sbnhtml",
-        };
 
         static TemplateWatcher()
         {
@@ -46,7 +28,7 @@ namespace Linefusion.Generators.Editor
         public static void RegisterExtensions()
         {
             var exts = EditorSettings.projectGenerationUserExtensions.ToList();
-            exts.AddRange(extensions);
+            exts.AddRange(TemplateExtensions.Extensions);
             exts.Sort();
 
             EditorSettings.projectGenerationUserExtensions = exts.Distinct().ToArray();
@@ -63,7 +45,7 @@ namespace Linefusion.Generators.Editor
 
             watchers.Clear();
 
-            foreach (var extension in extensions)
+            foreach (var extension in TemplateExtensions.Extensions)
             {
                 watchers.Add(CreateFileWatcher(UnityUtils.AssetsDir.Value, $"*.{extension}"));
                 watchers.Add(CreateFileWatcher(UnityUtils.PackagesDir.Value, $"*.{extension}"));
@@ -148,7 +130,7 @@ namespace Linefusion.Generators.Editor
         {
             var relativePath = UnityUtils.GetPathRelativeToProject(assetPath);
             var extension = Path.GetExtension(relativePath).TrimStart('.');
-            if (!extensions.Contains(extension))
+            if (!TemplateExtensions.Extensions.Contains(extension))
             {
                 return false;
             }

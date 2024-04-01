@@ -1,13 +1,14 @@
+using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
-
 using Linefusion.Generator.IO;
-using Linefusion.Generators;
-using Linefusion.Generators.Functions;
-
 using Scriban;
 using Scriban.Parsing;
 using Scriban.Runtime;
+using UnityEditor;
+
+using UnityEngine;
 
 namespace Linefusion.Generators.Editor
 {
@@ -22,23 +23,52 @@ namespace Linefusion.Generators.Editor
 
         public string GetPath(TemplateContext context, SourceSpan callerSpan, string templateName)
         {
-            var workingDir = new SafePath(context.CurrentSourceFile).Parent;
+            SafePath? templatePath = null;
 
-            var templatePath = new SafePath(templateName);
-            if (templatePath.IsAbsolute)
+            if (Uri.TryCreate(templateName, UriKind.Absolute, out var uri))
             {
-                return templatePath;
-            }
+                var workingDir = new SafePath(context.CurrentSourceFile).Parent;
+                if (uri.Scheme == "std")
+                {
+                    var templates = UnityUtils.GetPackagePath("Templates");
+                    var safeTemplates = SafeIO.Resolve(templates);
 
-            if (templatePath.IsRooted)
-            {
-                using var path = SafeIO.UsePath(UnityUtils.ProjectDir);
-                templatePath = templatePath.Absolute;
+                    using var root = SafeIO.UsePath(templates);
+
+                    templatePath = TemplateExtensions
+                        .Extensions.Select(ext => Path.Combine(safeTemplates, $"{uri.AbsolutePath}.{ext}"))
+                        .FirstOrDefault(SafeIO.Exists);
+                }
+                else
+                {
+                    throw new Exception($"Invalid template context: {uri.Scheme}");
+                }
             }
             else
             {
-                using var path = SafeIO.UsePath(workingDir);
-                templatePath = templatePath.Absolute;
+                var workingDir = new SafePath(context.CurrentSourceFile).Parent;
+
+                templatePath = new SafePath(templateName);
+                if (templatePath.IsAbsolute)
+                {
+                    return templatePath;
+                }
+
+                if (templatePath.IsRooted)
+                {
+                    using var path = SafeIO.UsePath(UnityUtils.ProjectDir);
+                    templatePath = templatePath.Absolute;
+                }
+                else
+                {
+                    using var path = SafeIO.UsePath(workingDir);
+                    templatePath = templatePath.Absolute;
+                }
+            }
+
+            if (templatePath == null)
+            {
+                throw new Exception($"Template not found: {templateName}");
             }
 
             return templatePath;
@@ -49,7 +79,11 @@ namespace Linefusion.Generators.Editor
             return File.ReadAllText(templatePath);
         }
 
-        public ValueTask<string> LoadAsync(TemplateContext context, SourceSpan callerSpan, string templatePath)
+        public ValueTask<string> LoadAsync(
+            TemplateContext context,
+            SourceSpan callerSpan,
+            string templatePath
+        )
         {
             return new ValueTask<string>(Task.FromResult(Load(context, callerSpan, templatePath)));
         }

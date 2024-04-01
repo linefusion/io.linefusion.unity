@@ -1,16 +1,29 @@
-
-using UnityEditor;
-using UnityEngine;
-using UnityEditor.Compilation;
+using System;
 using System.Linq;
-using UnityEditorInternal;
-using Assembly = System.Reflection.Assembly;
+using System.Text;
 using JetBrains.Annotations;
-using NTypewriter.CodeModel;
 using Linefusion.Generators.Editor.CodeModel.Models;
+using NTypewriter.CodeModel;
+using UnityEditor;
+using UnityEditor.Compilation;
+using UnityEditorInternal;
+using UnityEngine;
+using Assembly = System.Reflection.Assembly;
 
 namespace Linefusion.Generators.Editor
 {
+    public class UnityAssembly
+    {
+        public Assembly Assembly { get; set; }
+        public ICodeModel Model { get; set; }
+
+        public UnityAssembly(Assembly assembly, ICodeModel model)
+        {
+            Assembly = assembly;
+            Model = model;
+        }
+    }
+
     public class UnityFunctions
     {
         public struct AssemblyDefinitionData
@@ -25,70 +38,58 @@ namespace Linefusion.Generators.Editor
 
         public string ProjectDir
         {
-            get
-            {
-                return UnityUtils.ProjectDir;
-            }
+            get { return UnityUtils.ProjectDir; }
         }
 
         public string AssetsDir
         {
-            get
-            {
-                return UnityUtils.AssetsDir;
-            }
+            get { return UnityUtils.AssetsDir; }
         }
 
-        public Assembly[] Assemblies
+        public UnityAssembly[] Assemblies
         {
             get
             {
-                return CompilationPipeline.GetAssemblies()
+                return CompilationPipeline
+                    .GetAssemblies()
                     .Select(asm => asm.name)
                     .Select(CompilationPipeline.GetAssemblyDefinitionFilePathFromAssemblyName)
-                    .Where(path => AssetDatabase.GetMainAssetTypeAtPath(path) == typeof(AssemblyDefinitionAsset))
-                    .Where(path => path.StartsWith("Assets/"))
+                    .Where(path =>
+                        AssetDatabase.GetMainAssetTypeAtPath(path)
+                        == typeof(AssemblyDefinitionAsset)
+                    )
                     .Select(AssetDatabase.LoadAssetAtPath<AssemblyDefinitionAsset>)
                     .Select(asset => asset.text)
                     .Select(JsonUtility.FromJson<AssemblyDefinitionData>)
                     .Select(data => data.name)
                     .Select(Assembly.Load)
+                    .Where(assembly => assembly != null)
                     .Select(v =>
                     {
-                        return v;
+                        return new UnityAssembly(v, Model.From(v));
                     })
                     .ToArray();
             }
         }
 
-        public ICodeModel[] code
+        public static void Log(params object[] messages)
         {
-            get
+            var builder = new StringBuilder();
+            foreach (var message in messages)
             {
-                return CompilationPipeline.GetAssemblies()
-                    .Select(asm => asm.name)
-                    .Select(CompilationPipeline.GetAssemblyDefinitionFilePathFromAssemblyName)
-                    .Where(path => AssetDatabase.GetMainAssetTypeAtPath(path) == typeof(AssemblyDefinitionAsset))
-                    //.Where(path => path.StartsWith("Assets/"))
-                    .Select(AssetDatabase.LoadAssetAtPath<AssemblyDefinitionAsset>)
-                    .Select(asset => asset.text)
-                    .Select(JsonUtility.FromJson<AssemblyDefinitionData>)
-                    .Select(data => data.name)
-                    .Select(Assembly.Load)
-                    .Select(v => Model.From(v))
-                    .ToArray();
+                builder.Append(message);
+                builder.Append(" ");
             }
-        }
-
-        public static void Log(object message)
-        {
-            Debug.Log(message);
+            Debug.Log(builder.ToString());
         }
 
         public static void Clear()
         {
             var logEntries = System.Type.GetType("UnityEditor.LogEntries, UnityEditor.dll");
-            var clearMethod = logEntries.GetMethod("Clear", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+            var clearMethod = logEntries.GetMethod(
+                "Clear",
+                System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public
+            );
             clearMethod.Invoke(null, null);
         }
     }

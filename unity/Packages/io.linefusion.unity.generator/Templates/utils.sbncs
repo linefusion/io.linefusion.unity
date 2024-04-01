@@ -1,0 +1,17 @@
+{{~
+
+  func is_empty(_value)
+    _value = _value ?? []
+    if _value == empty
+      ret true
+    end
+    if _value == ""
+      ret true
+    end
+    if array.size(_value) == 0
+      ret true
+    end
+    ret false
+  end
+
+~}}

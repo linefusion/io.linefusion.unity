@@ -60,8 +60,7 @@ namespace Linefusion.Generator.IO
             {
                 lock (locker)
                 {
-                    Resolve(path);
-                    pathStack.Value.Push(path);
+                    pathStack.Value.Push(Resolve(path));
                 }
             }
 
@@ -203,16 +202,21 @@ namespace Linefusion.Generator.IO
             return !IsRooted(path);
         }
 
-        public static IEnumerable<string> GetSegments(string path)
+        public static IEnumerable<string> GetSegments(params string[] paths)
         {
-            return path.Replace(AltDirSeparator, DirSeparator)
-                .Split(DirSeparator)
+            return paths
+                .SelectMany(path => path.Replace(AltDirSeparator, DirSeparator).Split(DirSeparator))
                 .Where(segment => !string.IsNullOrEmpty(segment));
+        }
+
+        public static string Assemble(params string[] segments)
+        {
+            return string.Join(DirSeparator, GetSegments(segments));
         }
 
         public static string Assemble(IEnumerable<string> segments)
         {
-            return string.Join(DirSeparator, segments);
+            return string.Join(DirSeparator, GetSegments(segments.ToArray()));
         }
 
         public static string GetParent(string path)

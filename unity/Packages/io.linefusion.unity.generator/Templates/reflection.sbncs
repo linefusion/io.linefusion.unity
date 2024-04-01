@@ -1,0 +1,64 @@
+{{~
+
+capture $discard
+
+  func has_attribute(obj, name)
+    ret get_attribute(obj, name) != null
+  end
+
+  func get_attribute(obj, name)
+    if obj == null || name == null
+      ret null
+    end
+    $attributes = obj.attributes
+    func condition(target)
+      ret target.full_name == name
+    end
+    $attr = ($attributes | array.filter @condition | array.first)
+    if $attr == null
+      ret null
+    end
+    ret $attr.data
+  end
+
+  func get_attributes(obj, name = null)
+    if obj == null
+      ret []
+    end
+    $attributes = obj.attributes
+    func condition(target)
+      if name == null
+        ret true
+      end
+      ret target.full_name == name
+    end
+    ret $attributes | array.filter @condition | array.map "data"
+  end
+
+  func get_assembly(name)
+    func condition(context)
+      $check1 = context.assembly.location | string.ends_with("/" + name + ".dll")
+      $check2 = context.assembly.location | string.ends_with("\\" + name + ".dll")
+      ret $check1 || $check2
+    end
+    ret unity.assemblies | array.filter @condition | array.first
+  end
+
+  func get_generators(generator)
+    $generators = []
+    for $assembly in unity.assemblies
+      $attrs = get_attributes($assembly.model, generator)
+      for $attr in $attrs
+        $gen = {}
+        $gen.model = $assembly.model
+        $gen.assembly = $assembly
+        $gen.generator = $attr
+        $generators = $generators | array.add($gen)
+      end
+    end
+    ret $generators
+  end
+
+end
+
+~}}

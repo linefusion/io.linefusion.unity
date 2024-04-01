@@ -290,6 +290,8 @@ namespace Linefusion.Generators.Editor.CodeModel
             public string Name => data.GetType().Name;
             public string FullName => data.GetType().FullName;
 
+            public System.Attribute Data => data;
+
             public IClass? AttributeClass => Class.From(data.GetType().GetTypeInfo());
             public IEnumerable<IAttributeArgument> Arguments => AttributeArgument.From(data);
 
@@ -937,6 +939,26 @@ namespace Linefusion.Generators.Editor.CodeModel
             public Type(TypeInfo value)
             {
                 this.value = value;
+            }
+
+            public bool IsAssinableTo(System.Type type)
+            {
+                return this.value.IsAssignableTo(type);
+            }
+
+            public bool IsAssinableTo<T>()
+            {
+                return this.value.IsAssignableTo(typeof(T));
+            }
+
+            public bool IsAssinableFrom(System.Type type)
+            {
+                return this.value.IsAssignableFrom(type);
+            }
+
+            public bool IsAssinableFrom<T>()
+            {
+                return this.value.IsAssignableFrom(typeof(T));
             }
 
             public IType? BaseType => Type.From(value.BaseType?.GetTypeInfo());

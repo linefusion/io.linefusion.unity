@@ -1,5 +1,5 @@
 <Project>
-  
+
   <UsingTask TaskName="NormalizeAssetGuids" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
     <ParameterGroup>
       <ProjectDir ParameterType="System.String" Required="true" />
@@ -36,22 +36,22 @@
             var contents = File.ReadAllText(path);
 
             var result = guidMatch.Match(contents);
-            if (!result.Success) 
+            if (!result.Success)
             {
               throw new Exception("Meta file '" + path + "' does not contain a guid");
             }
 
             return result.Groups["guid"].Value;
           }
-  
+
           void RegenerateGuid(string guid, string value)
           {
             Log.LogMessage(MessageImportance.High, "Regenerating GUID for " + guid);
-            foreach (var kv in MetaBase) 
+            foreach (var kv in MetaBase)
             {
               var contents = kv.Value;
               var replacedContents = contents.Replace(guid, value);
-              if (contents != replacedContents) 
+              if (contents != replacedContents)
               {
                 Log.LogMessage(MessageImportance.High, " > Found reference in  " + kv.Key);
                 File.WriteAllText(kv.Key, replacedContents);
@@ -67,15 +67,15 @@
             .OrderBy(item => item, StringComparer.InvariantCultureIgnoreCase)
             .ToArray();
 
-          var exclusions = paths.Where(path => path.EndsWith("~")).ToArray();
-          paths = paths.Where(path => !exclusions.Any(exclusion => path.StartsWith(exclusion))).ToArray();
+          // var exclusions = paths.Where(path => path.EndsWith("~")).ToArray();
+          // paths = paths.Where(path => !exclusions.Any(exclusion => path.StartsWith(exclusion))).ToArray();
 
           foreach (var path in paths)
           {
             var relativePath = GetRelativePath(TargetDir, path);
 
             var guid = "";
-            using (var hash = SHA256.Create()) 
+            using (var hash = SHA256.Create())
             {
               var temp = BitConverter.ToString(hash.ComputeHash(Encoding.UTF8.GetBytes(relativePath))).Replace("-", "").ToLower();
 
