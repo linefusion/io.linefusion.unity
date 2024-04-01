@@ -97,6 +97,7 @@ namespace Linefusion.Generators.Editor
                     .Set<FileFunctions>("file")
                     .Set<DirFunctions>("directory")
                     .Set<CsharpFunctions>("csharp")
+                    .Set<PathFunctions>("paths")
                     .Set(
                         "dotnet",
                         TemplateObject2

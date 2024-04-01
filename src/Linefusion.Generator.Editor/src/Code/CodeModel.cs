@@ -233,17 +233,19 @@ namespace Linefusion.Generators.Editor.CodeModel
 
     namespace Models
     {
-        public class Attribute : IAttribute
+        public class CustomAttribute : IAttribute
         {
             private readonly CustomAttributeData data;
 
-            public Attribute(CustomAttributeData value)
+            public CustomAttribute(CustomAttributeData value)
             {
                 this.data = value;
             }
 
             public string Name => data.AttributeType.Name;
             public string FullName => data.AttributeType.FullName;
+
+            public CustomAttributeData Data => data;
 
             public IClass? AttributeClass => Class.From(data.AttributeType.GetTypeInfo());
             public IEnumerable<IAttributeArgument> Arguments =>
@@ -266,13 +268,58 @@ namespace Linefusion.Generators.Editor.CodeModel
             {
                 return types
                     .Where(type => type.IsAttribute())
-                    .SelectMany(type => From(type.CustomAttributes))
+                    .SelectMany(type => From(type.AsType().GetCustomAttributesData()))
                     .ToArray();
             }
 
             public static IEnumerable<IAttribute> From(IEnumerable<CustomAttributeData> attributes)
             {
+                return attributes.Select(data => new Models.CustomAttribute(data)).ToArray();
+            }
+        }
+
+        public class Attribute : IAttribute
+        {
+            private readonly System.Attribute data;
+
+            public Attribute(System.Attribute value)
+            {
+                this.data = value;
+            }
+
+            public string Name => data.GetType().Name;
+            public string FullName => data.GetType().FullName;
+
+            public IClass? AttributeClass => Class.From(data.GetType().GetTypeInfo());
+            public IEnumerable<IAttributeArgument> Arguments => AttributeArgument.From(data);
+
+            public static IEnumerable<IAttribute> From(System.Type type)
+            {
+                return From(type.GetCustomAttributes(true)).ToArray();
+            }
+
+            public static IEnumerable<IAttribute> From(System.Reflection.TypeInfo type)
+            {
+                return From(type.AsType().GetCustomAttributes(true)).ToArray();
+            }
+
+            public static IEnumerable<IAttribute> From(IEnumerable<System.Type> types)
+            {
+                return From(types.Select(type => type.GetTypeInfo())).ToArray();
+            }
+
+            public static IEnumerable<IAttribute> From(IEnumerable<System.Attribute> attributes)
+            {
                 return attributes.Select(data => new Models.Attribute(data)).ToArray();
+            }
+
+            public static IEnumerable<IAttribute> From(IEnumerable<object> attributes)
+            {
+                return From(
+                    attributes
+                        .Where(obj => obj.GetType().IsAssignableTo<System.Attribute>())
+                        .Cast<System.Attribute>()
+                );
             }
         }
 
@@ -320,6 +367,19 @@ namespace Linefusion.Generators.Editor.CodeModel
                     arg.TypedValue.ArgumentType.GetTypeInfo(),
                     fromConstructor
                 );
+            }
+
+            public static IEnumerable<IAttributeArgument> From(System.Attribute attr)
+            {
+                foreach (var prop in attr.GetType().GetProperties())
+                {
+                    yield return new AttributeArgument(
+                        prop.Name,
+                        prop.GetValue(attr),
+                        prop.PropertyType.GetTypeInfo(),
+                        false
+                    );
+                }
             }
         }
 
@@ -382,7 +442,11 @@ namespace Linefusion.Generators.Editor.CodeModel
             }
 
             public Assembly Assembly => assembly;
-            public IEnumerable<IAttribute> Attributes => Attribute.From(assembly.CustomAttributes);
+
+            public IEnumerable<IAttribute> Attributes =>
+                Attribute.From(assembly.GetCustomAttributes(true));
+            public IEnumerable<IAttribute> CustomAttributes =>
+                CustomAttribute.From(assembly.GetCustomAttributesData());
 
             public IEnumerable<IClass> Classes => Class.From(assembly.DefinedTypes);
             public IEnumerable<IDelegate> Delegates => Delegate.From(assembly.DefinedTypes);
@@ -546,7 +610,7 @@ namespace Linefusion.Generators.Editor.CodeModel
                     .Select(member => new EnumValue(
                         member!.Name,
                         member!.GetValue(null),
-                        Attribute.From(member!.GetCustomAttributesData())
+                        Attribute.From(member!.GetCustomAttributes(true))
                     ))
                     .ToArray()!;
             }
@@ -747,8 +811,6 @@ namespace Linefusion.Generators.Editor.CodeModel
         {
             private readonly TypeInfo value;
 
-
-
             public NamedType(TypeInfo value)
                 : base(value)
             {
@@ -871,6 +933,7 @@ namespace Linefusion.Generators.Editor.CodeModel
         public class Type : ISymbolBase, IType, ITypeReferencedByMember
         {
             private readonly TypeInfo value;
+
             public Type(TypeInfo value)
             {
                 this.value = value;
@@ -902,6 +965,7 @@ namespace Linefusion.Generators.Editor.CodeModel
 
             public virtual string Name => value.Name;
             public virtual string FullName => value.FullName;
+
             /*
             {
                 get
@@ -916,8 +980,10 @@ namespace Linefusion.Generators.Editor.CodeModel
             }*/
             public string Namespace => value.Namespace;
 
-
-            public IEnumerable<IAttribute> Attributes => Attribute.From(value.CustomAttributes);
+            public IEnumerable<IAttribute> Attributes =>
+                Attribute.From(value.AsType().GetCustomAttributes(true));
+            public IEnumerable<IAttribute> CustomAttributes =>
+                CustomAttribute.From(value.AsType().GetCustomAttributesData());
             public INamedType? ContainingType => NamedType.From(value.DeclaringType.GetTypeInfo());
             public IDocumentationCommentXml DocComment => new DocumentationCommentXml();
 
@@ -974,12 +1040,14 @@ namespace Linefusion.Generators.Editor.CodeModel
             }
         }
 
-
         public class SymbolBase : ISymbolBase
         {
             private readonly MemberInfo member;
 
-            public IEnumerable<IAttribute> Attributes => Attribute.From(member.CustomAttributes);
+            public IEnumerable<IAttribute> Attributes =>
+                Attribute.From(member.GetCustomAttributes(true));
+            public IEnumerable<IAttribute> CustomAttributes =>
+                CustomAttribute.From(member.GetCustomAttributesData());
             public INamedType? ContainingType => NamedType.From(member.DeclaringType.GetTypeInfo());
             public IDocumentationCommentXml DocComment => new DocumentationCommentXml();
 
