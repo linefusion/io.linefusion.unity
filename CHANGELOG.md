@@ -1,5 +1,11 @@
 # io.linefusion.unity
 
+## 0.0.15
+
+### Patch Changes
+
+- ae13c23: fix attributes
+
 ## 0.0.14
 
 ### Patch Changes
